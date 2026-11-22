@@ -63,14 +63,27 @@ const Touch = (() => {
     const vv = window.visualViewport;
     const vw = vv ? vv.width : innerWidth, vh = vv ? vv.height : innerHeight;
     const con = document.getElementById('console');
-    const margin = Math.round(Math.min(vw, vh) * 0.025);
+    const margin = Math.round(Math.min(vw, vh) * 0.02);
     const availW = vw - margin * 2, availH = vh - margin * 2;
-    // controls scale with screen height; "u" is one design unit (side panel = 100u wide)
-    let u = Math.max(1, Math.min(availH / 130, availW / 520, 2.6));
-    const side = 100 * u, gap = 5 * u, padX = 8 * u, padY = 7 * u, bez = Math.max(4, 6 * u), label = Math.max(9, 11 * u);
-    let sw = availW - side * 2 - gap * 2 - padX * 2 - bez * 2;
-    let sh = availH - padY * 2 - bez - label;
-    if (sw / sh > 16 / 9) sw = sh * 16 / 9; else sh = sw * 9 / 16;
+    const portrait = vh > vw * 1.05;
+    con.classList.toggle('portrait', portrait);
+    let u, side, sw, sh, bez, label;
+    if (!portrait) {
+      // landscape: controls on both sides; "u" is one design unit (side panel = 100u wide)
+      u = Math.max(1, Math.min(availH / 130, availW / 470, 3.4));
+      side = 100 * u; bez = Math.max(4, 6 * u); label = Math.max(9, 11 * u);
+      sw = availW - side * 2 - 10 * u - 16 * u - bez * 2;
+      sh = availH - 14 * u - bez - label;
+      if (sw / sh > 16 / 9) sw = sh * 16 / 9; else sh = sw * 9 / 16;
+    } else {
+      // portrait: big screen on top, controls underneath (like a classic handheld)
+      u = Math.max(1, Math.min(availW / 222, availH / 300, 3.4));
+      bez = Math.max(4, 6 * u); label = Math.max(9, 11 * u);
+      side = (availW - 16 * u - 5 * u) / 2;
+      sw = availW - 16 * u - bez * 2; sh = sw * 9 / 16;
+      const maxSh = availH - 14 * u - bez - label - 6 * u - 132 * u;
+      if (sh > maxSh) { sh = maxSh; sw = sh * 16 / 9; }
+    }
     con.style.setProperty('--u', u + 'px');
     con.style.setProperty('--side', side + 'px');
     con.style.setProperty('--bez', bez + 'px');

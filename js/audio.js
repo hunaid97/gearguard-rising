@@ -133,7 +133,7 @@ const Sound = (() => {
       eng = { o, o2, g };
     }
     if (!eng) return;
-    const t = ac.currentTime, base = kind === 'jet' ? 140 : kind === 'tank' ? 38 : kind === 'truck' ? 45 : 60;
+    const t = ac.currentTime, base = { jet: 140, tank: 38, truck: 45, bike: 90, jetski: 75, heli: 28 }[kind] || 60;
     eng.o.frequency.setTargetAtTime(base + speed * 18, t, 0.08);
     eng.o2.frequency.setTargetAtTime((base + speed * 18) * 0.5, t, 0.08);
     eng.g.gain.setTargetAtTime(on ? 0.035 + speed * 0.01 : 0, t, 0.1);

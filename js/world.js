@@ -78,7 +78,7 @@ class Body {
     if (this.form === to) return;
     const from = this.spriteInfo();
     this.form = to; this.applyDims();
-    this.flying = to === 'vehicle' && this.cfg.vehicle === 'jet';
+    this.flying = to === 'vehicle' && !!FLYING[this.cfg.vehicle];
     if (fx) {
       this.tfT = TF_TIME; this.tfFrom = from;
       this.world.burst(this.x, this.y - this.h / 2, 18, ['#ffffff', '#ffe14d', '#8fd8ff'], 2.4, 26, 0.05, 1.34);
@@ -129,7 +129,7 @@ class Player extends Body {
     const w = this.world, st = this.stats();
     const held = b => inp ? inp.held(b) : false, pressed = b => inp ? inp.pressed(b) : false;
     const dx = (held('right') ? 1 : 0) - (held('left') ? 1 : 0);
-    const jet = this.form === 'vehicle' && this.cfg.vehicle === 'jet';
+    const jet = this.form === 'vehicle' && !!FLYING[this.cfg.vehicle];
 
     if (jet) {
       const dy = (held('down') ? 1 : 0) - (held('up') ? 1 : 0);
@@ -150,7 +150,7 @@ class Player extends Body {
     if (pressed('cross') && !jet) {
       if (held('down') && this.onGround && w.onGirder(this)) { this.dropT = 12; this.onGround = false; this.coyote = 0; }
       else if (this.coyote > 0 && st.jump) { this.vy = -st.jump; this.coyote = 0; Sound.play('jump'); }
-      else if (this.form === 'robot' && this.airJumps > 0) {
+      else if ((this.form === 'robot' || (this.form === 'vehicle' && this.cfg.vehicle === 'jetski')) && this.airJumps > 0) {
         this.airJumps--; this.vy = -st.jump * 0.88; Sound.play('djump');
         w.burst(this.x, this.y, 8, ['#ffffff', '#9ff3ff'], 1.5, 18);
       }
@@ -163,8 +163,8 @@ class Player extends Body {
       if (this.form === 'robot' && this.shootCd <= 0) { this.shootCd = 13; this.shootT = 14; w.fire(this, 'player'); }
       else if (this.form === 'vehicle') {
         const v = this.cfg.vehicle;
-        if ((v === 'jet' || v === 'tank') && this.shootCd <= 0) { this.shootCd = v === 'tank' ? 34 : 12; w.fire(this, 'player', v); }
-        else if ((v === 'car' || v === 'truck') && pressed('square') && this.honkCd <= 0) { this.honkCd = 25; Sound.play('honk'); w.honk(this); }
+        if ((v === 'jet' || v === 'tank' || v === 'heli') && this.shootCd <= 0) { this.shootCd = v === 'tank' ? 34 : v === 'heli' ? 9 : 12; w.fire(this, 'player', v); }
+        else if (v !== 'jet' && v !== 'tank' && v !== 'heli' && pressed('square') && this.honkCd <= 0) { this.honkCd = 25; Sound.play('honk'); w.honk(this); }
       }
     }
     if (pressed('circle')) {
@@ -175,7 +175,11 @@ class Player extends Body {
 
     const stepBefore = Math.floor(this.anim / 7);
     w.moveBody(this);
-    if (this.form === 'vehicle') Sound.engine(true, Math.abs(this.vx) + Math.abs(this.vy) * 0.5, this.cfg.vehicle);
+    if (this.form === 'vehicle') {
+      Sound.engine(true, Math.abs(this.vx) + Math.abs(this.vy) * 0.5, this.cfg.vehicle);
+      if (this.cfg.vehicle === 'jetski' && Math.abs(this.vx) > 1 && w.frame % 2 === 0) w.particles.push({ x: this.x - this.facing * 12, y: this.y - 2, vx: -this.facing * (1 + Math.random() * 2), vy: -1.5 - Math.random() * 2, life: 26, max: 26, c: pick(['#bfe8ff', '#ffffff', '#6fc3f0']), s: 1.34, g: 0.15 });
+      if (this.cfg.vehicle === 'heli' && w.frame % 4 === 0 && this.y > GROUND - 40) w.dust(this.x, GROUND, 2);
+    }
     else Sound.engine(false);
     if (this.justLanded) {
       if (this.form === 'robot' && (this.slamming || this.justLanded > 8.5)) w.slam(this);
@@ -453,9 +457,9 @@ class World {
   fire(b, team, kind, speed, target) {
     const sc = b.sc;
     let x, y, vx, vy = 0, r = 2, dmg = 1, color = b.cfg.c3;
-    if (b.form === 'robot') { x = b.x + b.facing * 20 * sc; y = b.y - 23 * sc; vx = b.facing * (speed || 6); }
+    if (b.form === 'robot') { x = b.x + b.facing * 23 * sc; y = b.y - 22 * sc; vx = b.facing * (speed || 6); }
     else if (kind === 'tank') { x = b.x + b.facing * 22 * sc; y = b.y - 13 * sc; vx = b.facing * 5; r = 3; dmg = 3; color = '#ffd04d'; }
-    else { x = b.x + b.facing * 16 * sc; y = b.y - 5 * sc; vx = b.facing * 7; }
+    else { x = b.x + b.facing * 16 * sc; y = b.y - (kind === 'heli' ? 7 : 5) * sc; vx = b.facing * 7; }
     if (team === 'enemy') color = '#ff4060';
     if (team === 'ally') color = '#ffe14d';
     if (target) { const dx = target.x - x, dy = (target.y - target.h / 2) - y, d = Math.hypot(dx, dy) || 1; const s = speed || 6; vx = dx / d * s; vy = dy / d * s; }
@@ -905,7 +909,8 @@ class World {
       let items;
       if (p.form === 'kid') items = [['dpad', 'MOVE'], ['cross', 'JUMP'], ['triangle', 'TALK']];
       else if (p.form === 'robot') items = [['cross', 'JUMP x2'], ['square', 'BLAST'], ['circle', 'TRANSFORM'], ['down', 'SLAM']];
-      else if (p.cfg.vehicle === 'jet') items = [['dpad', 'FLY'], ['square', 'FIRE'], ['circle', 'ROBOT']];
+      else if (FLYING[p.cfg.vehicle]) items = [['dpad', 'FLY'], ['square', 'FIRE'], ['circle', 'ROBOT']];
+      else if (p.cfg.vehicle === 'jetski') items = [['cross', 'JUMP x2'], ['square', 'HONK'], ['circle', 'ROBOT']];
       else if (p.cfg.vehicle === 'tank') items = [['cross', 'JUMP'], ['square', 'FIRE'], ['circle', 'ROBOT']];
       else items = [['cross', 'JUMP'], ['square', 'HONK'], ['circle', 'ROBOT']];
       ctx.fillStyle = 'rgba(12,14,28,0.8)'; ctx.fillRect(0, H - 17, W, 17);

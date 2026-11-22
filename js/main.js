@@ -138,7 +138,8 @@ class PlayScene {
 // ===================================================== CHARACTER SELECT
 class SelectScene {
   constructor() {
-    this.list = [CHARS.qsuit, CHARS.titan, CHARS.zip]
+    const qv = ['bike', 'jetski', 'heli', 'jet', 'truck', 'tank'].filter(v => v !== CHARS.qsuit.vehicle).map(v => ({ ...CHARS.qsuit, vehicle: v, name: `${PERSONAL.name} ${{ bike: 'BIKE', jetski: 'JETSKI', heli: 'HELI', jet: 'JET', truck: 'TRUCK', tank: 'TANK' }[v]}` }));
+    this.list = [CHARS.qsuit, ...qv, CHARS.titan, CHARS.zip]
       .concat(Roster.load().map((c, i) => ({ ...c, custom: i })));
     this.list.push({ factory: true, name: 'NEW ROBOT' });
     this.sel = 0; this.t = 0; this.del = -1;

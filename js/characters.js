@@ -7,7 +7,7 @@ const PART_OPTIONS = {
   arms: ['std', 'blaster', 'claw', 'hammer', 'thin'],
   legs: ['std', 'wheels', 'thruster', 'heavy', 'treads'],
   extra: ['none', 'stacks', 'doors', 'wings', 'cannon', 'jetpack', 'spikes', 'shield'],
-  vehicle: ['car', 'truck', 'jet', 'tank'],
+  vehicle: ['car', 'truck', 'jet', 'tank', 'bike', 'jetski', 'heli'],
 };
 const PART_NAMES = {
   hero: 'HERO', leader: 'LEADER', scout: 'SCOUT', seeker: 'SEEKER', brute: 'BRUTE', knight: 'KNIGHT', horns: 'HORNED', dome: 'DOME',
@@ -16,7 +16,8 @@ const PART_NAMES = {
   wheels: 'WHEELS', thruster: 'THRUSTERS', heavy: 'HEAVY', treads: 'TREADS',
   none: 'NONE', stacks: 'EXHAUSTS', doors: 'DOORS', wings: 'WINGS', cannon: 'CANNON', jetpack: 'JETPACK', spikes: 'SPIKES', shield: 'SHIELD',
 };
-const VEHICLE_NAMES = { car: 'SPORTS CAR', truck: 'BIG TRUCK', jet: 'JET PLANE', tank: 'TANK' };
+const VEHICLE_NAMES = { car: 'SPORTS CAR', truck: 'BIG TRUCK', jet: 'JET PLANE', tank: 'TANK', bike: 'MOTORBIKE', jetski: 'JET SKI', heli: 'HELICOPTER' };
+const FLYING = { jet: true, heli: true };
 const PALETTE = ['#e03030', '#ff7a1a', '#ffd21f', '#2ecc71', '#1fd3e0', '#2f6fff', '#9b59ff', '#ff5fb4',
   '#ffffff', '#9aa0a8', '#3a3f4b', '#8b5a2b', '#1a1c22'];
 const EYE_PALETTE = ['#7fd8ff', '#ff3030', '#ffd21f', '#4dff88', '#ff5fb4', '#ffffff', '#b07bff'];
@@ -24,10 +25,10 @@ const PART_LABELS = ['HELMET', 'CHEST ARMOR', 'LEFT ARM', 'RIGHT ARM', 'LEFT LEG
 
 const CHARS = {
   // the wise leader of the Gearguard
-  titan: { id: 'titan', name: 'TITAN', head: 'leader', torso: 'grille', arms: 'std', legs: 'heavy', extra: 'stacks',
+  titan: { id: 'titan', name: 'TITAN', head: 'leader', torso: 'grille', arms: 'std', legs: 'heavy', extra: 'shield',
     c1: '#e8a317', c2: '#3b4352', c3: '#6ff3ff', vehicle: 'truck', scale: 1.25 },
   // Qumayl's speedy best friend
-  zip: { id: 'zip', name: 'ZIP', head: 'scout', torso: 'racer', arms: 'std', legs: 'std', extra: 'doors',
+  zip: { id: 'zip', name: 'ZIP', head: 'scout', torso: 'racer', arms: 'std', legs: 'wheels', extra: 'none',
     c1: '#19c3b3', c2: '#f4f4f4', c3: '#ffe14d', vehicle: 'car', scale: 1 },
   // sneaky flying villain
   skysnarl: { id: 'skysnarl', name: 'SKYSNARL', head: 'seeker', torso: 'jet', arms: 'thin', legs: 'thruster', extra: 'wings',
@@ -48,6 +49,9 @@ const STATS = {
   truck: { w: 30, h: 22, speed: 3.8, jump: 4.6 },
   jet: { w: 30, h: 12, speed: 4.0, jump: 0 },
   tank: { w: 28, h: 16, speed: 2.3, jump: 4.0 },
+  bike: { w: 24, h: 13, speed: 5.4, jump: 5.4 },
+  jetski: { w: 28, h: 10, speed: 5.0, jump: 5.6 },
+  heli: { w: 30, h: 16, speed: 3.2, jump: 0 },
 };
 
 const SPEAKERS = {
