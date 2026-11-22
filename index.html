@@ -7,50 +7,105 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Qumayl">
-<meta name="theme-color" content="#07080d">
+<meta name="theme-color" content="#0b0c12">
 <title>Qumayl: Gearguard Rising</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
-  html, body { margin: 0; height: 100%; background: #07080d; overflow: hidden; }
-  body { display: flex; align-items: center; justify-content: center; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: none; }
-  canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: block; touch-action: none; }
+  html, body { margin: 0; height: 100%; background: #0b0c12; overflow: hidden; }
+  body { display: flex; align-items: center; justify-content: center; -webkit-user-select: none; user-select: none;
+    -webkit-touch-callout: none; touch-action: none; -webkit-tap-highlight-color: transparent; font-family: "Press Start 2P", monospace; }
+  canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: block; touch-action: none; border-radius: calc(var(--u) * 1.5); }
 
-  /* ---------- touch controls ---------- */
-  #tc { position: fixed; inset: 0; pointer-events: none; z-index: 5; font-family: "Press Start 2P", monospace; }
-  #tc > * { pointer-events: auto; touch-action: none; }
-  #dpad { position: absolute; left: max(12px, env(safe-area-inset-left)); bottom: 12px; width: 36vmin; height: 36vmin;
-    border-radius: 50%; background: rgba(255,255,255,0.10); border: 2px solid rgba(255,255,255,0.35); }
-  #dpad.on { background: rgba(255,255,255,0.18); }
-  #dpad .arr { position: absolute; width: 0; height: 0; border: 4.2vmin solid transparent; opacity: 0.75; }
-  #dpad .u { left: 50%; top: 5%; transform: translateX(-50%); border-bottom-color: #fff; border-top-width: 0; }
-  #dpad .d { left: 50%; bottom: 5%; transform: translateX(-50%); border-top-color: #fff; border-bottom-width: 0; }
-  #dpad .l { top: 50%; left: 5%; transform: translateY(-50%); border-right-color: #fff; border-left-width: 0; }
-  #dpad .r { top: 50%; right: 5%; transform: translateY(-50%); border-left-color: #fff; border-right-width: 0; }
-  #knob { position: absolute; left: 50%; top: 50%; width: 15vmin; height: 15vmin; margin: -7.5vmin 0 0 -7.5vmin; border-radius: 50%;
-    background: rgba(255,255,255,0.35); border: 2px solid rgba(255,255,255,0.6); pointer-events: none; }
-  #btns { position: absolute; right: max(12px, env(safe-area-inset-right)); bottom: calc(12px + 3.6vmin); width: 39vmin; height: 39vmin; pointer-events: none; }
-  #btns .b { position: absolute; width: 13.5vmin; height: 13.5vmin; border-radius: 50%; pointer-events: auto; touch-action: none;
-    background: rgba(20,22,30,0.55); border: 2px solid rgba(255,255,255,0.45); display: flex; align-items: center; justify-content: center;
-    font-family: system-ui, sans-serif; font-size: 7vmin; font-weight: 700; line-height: 1; }
-  #btns .b i { position: absolute; bottom: -3.2vmin; font: normal 2vmin "Press Start 2P", monospace; color: rgba(255,255,255,0.8); white-space: nowrap; }
-  #btns .b.on { background: rgba(255,255,255,0.4); transform: scale(0.92); }
-  #btns .triangle { left: 12.75vmin; top: 0; color: #4fe0a0; }
-  #btns .square { left: 0; top: 12.75vmin; color: #ff8ad8; }
-  #btns .circle { right: 0; top: 12.75vmin; color: #ff7070; }
-  #btns .cross { left: 12vmin; bottom: 0; color: #8fb8ff; width: 15vmin; height: 15vmin; }
-  #pause { position: absolute; top: 12vmin; right: max(12px, env(safe-area-inset-right)); padding: 6px 14px; border-radius: 14px;
-    background: rgba(20,22,30,0.55); border: 2px solid rgba(255,255,255,0.4); color: #fff; font-size: 12px; }
-  #pause.on { background: rgba(255,255,255,0.4); }
-  #rotate { display: none; position: absolute; inset: 0; background: #07080d; color: #ffe14d; font-size: 14px; line-height: 2;
+  /* ================= handheld console shell ================= */
+  #console { --u: 1px; display: flex; align-items: stretch; gap: calc(var(--u) * 5); padding: calc(var(--u) * 7) calc(var(--u) * 8);
+    border-radius: calc(var(--u) * 26); position: relative;
+    background: linear-gradient(180deg, #4a82ff 0%, #2f64e0 45%, #2350c0 100%);
+    box-shadow: inset 0 calc(var(--u) * 2) 0 rgba(255,255,255,0.45), inset 0 calc(var(--u) * -4) 0 rgba(0,0,0,0.28),
+      inset calc(var(--u) * 3) 0 0 rgba(255,255,255,0.12), 0 calc(var(--u) * 8) calc(var(--u) * 24) rgba(0,0,0,0.6); }
+  .side { width: var(--side); display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+    padding: calc(var(--u) * 4) 0; box-sizing: border-box; }
+  .brand { display: flex; align-items: center; gap: calc(var(--u) * 4); font-size: calc(var(--u) * 6.4); color: #ffe14d;
+    text-shadow: 0 calc(var(--u) * 1.2) 0 #14161c; letter-spacing: calc(var(--u) * 0.4); }
+  .led { width: calc(var(--u) * 5); height: calc(var(--u) * 5); border-radius: 50%; background: #4dff88;
+    box-shadow: 0 0 calc(var(--u) * 5) #4dff88, inset 0 calc(var(--u) * -1) 0 rgba(0,0,0,0.3); }
+  .grill { width: calc(var(--u) * 46); height: calc(var(--u) * 15); opacity: 0.8;
+    background: radial-gradient(circle, rgba(10,20,60,0.55) 38%, transparent 42%) 0 0 / calc(var(--u) * 7.6) calc(var(--u) * 7.6); }
+
+  #bezel { background: linear-gradient(180deg, #20232c, #14161c); border-radius: calc(var(--u) * 12);
+    padding: var(--bez) var(--bez) 0; display: flex; flex-direction: column; align-items: center;
+    box-shadow: inset 0 0 0 calc(var(--u) * 1.5) #000, 0 calc(var(--u) * 1.5) 0 rgba(255,255,255,0.25); }
+  #bezel .label { height: var(--label); display: flex; align-items: center; gap: calc(var(--u) * 5);
+    font-size: calc(var(--u) * 5); color: #7f8aa3; letter-spacing: calc(var(--u) * 0.5); white-space: nowrap; }
+  #bezel .label b { color: #ffe14d; font-weight: normal; }
+
+  /* d-pad (a cross) */
+  #dpad { position: relative; width: calc(var(--u) * 86); height: calc(var(--u) * 86); touch-action: none; }
+  #dpad::before { content: ""; position: absolute; inset: calc(var(--u) * -4); border-radius: 50%;
+    background: radial-gradient(circle, rgba(10,25,80,0.35) 60%, rgba(10,25,80,0) 72%); }
+  #dpad .arm { position: absolute; background: linear-gradient(180deg, #3a3f4b, #22252e); border-radius: calc(var(--u) * 5);
+    box-shadow: 0 calc(var(--u) * 3) 0 #0f1116, inset 0 calc(var(--u) * 1.5) 0 rgba(255,255,255,0.18); }
+  #dpad .u, #dpad .d { left: calc(var(--u) * 29); width: calc(var(--u) * 28); height: calc(var(--u) * 31); }
+  #dpad .l, #dpad .r { top: calc(var(--u) * 29); height: calc(var(--u) * 28); width: calc(var(--u) * 31); }
+  #dpad .u { top: 0; } #dpad .d { bottom: 0; } #dpad .l { left: 0; } #dpad .r { right: 0; }
+  #dpad .mid { position: absolute; left: calc(var(--u) * 27); top: calc(var(--u) * 27); width: calc(var(--u) * 32); height: calc(var(--u) * 32);
+    background: #2b2f39; border-radius: calc(var(--u) * 3); }
+  #dpad .mid::after { content: ""; position: absolute; inset: calc(var(--u) * 9); border-radius: 50%; background: #1d2027;
+    box-shadow: inset 0 calc(var(--u) * 1.5) calc(var(--u) * 2) rgba(0,0,0,0.6); }
+  #dpad .arm::after { content: ""; position: absolute; left: 50%; top: 50%; width: 0; height: 0; border: calc(var(--u) * 6) solid transparent; opacity: 0.55; }
+  #dpad .u::after { transform: translate(-50%, -80%); border-bottom-color: #c3c8d1; border-top-width: 0; }
+  #dpad .d::after { transform: translate(-50%, -20%); border-top-color: #c3c8d1; border-bottom-width: 0; }
+  #dpad .l::after { transform: translate(-80%, -50%); border-right-color: #c3c8d1; border-left-width: 0; }
+  #dpad .r::after { transform: translate(-20%, -50%); border-left-color: #c3c8d1; border-right-width: 0; }
+  #dpad.pu .u, #dpad.pd .d, #dpad.pl .l, #dpad.pr .r { background: #1a1d24; box-shadow: 0 calc(var(--u) * 0.5) 0 #0f1116; transform: translateY(calc(var(--u) * 2.5)); }
+
+  /* face buttons */
+  #btns { position: relative; width: calc(var(--u) * 92); height: calc(var(--u) * 98); }
+  #btns .b { position: absolute; width: calc(var(--u) * 30); height: calc(var(--u) * 30); border-radius: 50%; touch-action: none;
+    background: radial-gradient(circle at 35% 30%, #4a4f5c, #23262f 70%); display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 calc(var(--u) * 3.5) 0 #0f1116, inset 0 calc(var(--u) * 1.5) 0 rgba(255,255,255,0.2);
+    font-family: system-ui, -apple-system, sans-serif; font-size: calc(var(--u) * 15); font-weight: 800; line-height: 1; }
+  #btns .b i { position: absolute; top: calc(var(--u) * 32); font: normal calc(var(--u) * 4.6) "Press Start 2P", monospace; color: rgba(255,255,255,0.8); white-space: nowrap; }
+  #btns .b.on { transform: translateY(calc(var(--u) * 3)); box-shadow: 0 calc(var(--u) * 0.5) 0 #0f1116, inset 0 calc(var(--u) * 1.5) 0 rgba(255,255,255,0.1); }
+  #btns .triangle { left: calc(var(--u) * 31); top: 0; color: #4fe0a0; }
+  #btns .square { left: 0; top: calc(var(--u) * 30); color: #ff8ad8; }
+  #btns .circle { right: 0; top: calc(var(--u) * 30); color: #ff7070; }
+  #btns .cross { left: calc(var(--u) * 31); top: calc(var(--u) * 60); color: #8fb8ff; }
+
+  .pill { padding: calc(var(--u) * 4) calc(var(--u) * 9); border-radius: calc(var(--u) * 10); font-size: calc(var(--u) * 5.2); color: #fff;
+    background: #1f222b; box-shadow: 0 calc(var(--u) * 2.5) 0 #0f1116, inset 0 calc(var(--u) * 1) 0 rgba(255,255,255,0.2); touch-action: none; }
+  .pill.on { transform: translateY(calc(var(--u) * 2)); box-shadow: 0 calc(var(--u) * 0.5) 0 #0f1116; }
+
+  #rotate { display: none; position: fixed; inset: 0; z-index: 9; background: #0b0c12; color: #ffe14d; font-size: 14px; line-height: 2;
     text-align: center; align-items: center; justify-content: center; flex-direction: column; padding: 20px; }
   #rotate div { font-size: 60px; font-family: system-ui, sans-serif; }
   @media (orientation: portrait) { body.touch #rotate { display: flex; } }
 </style>
 </head>
 <body>
-<canvas id="game" width="1152" height="648"></canvas>
+<div id="console">
+  <div class="side" id="left">
+    <div class="brand"><span class="led"></span>GEARGUARD</div>
+    <div id="dpad"><div class="arm u"></div><div class="arm d"></div><div class="arm l"></div><div class="arm r"></div><div class="mid"></div></div>
+    <div class="grill"></div>
+  </div>
+  <div id="bezel">
+    <canvas id="game" width="1152" height="648"></canvas>
+    <div class="label"><b>★</b><span id="shell-label">ROBOT HERO</span><b>★</b></div>
+  </div>
+  <div class="side" id="right">
+    <div class="pill" data-b="start">START</div>
+    <div id="btns">
+      <div class="b triangle" data-b="triangle">△<i>TALK</i></div>
+      <div class="b square" data-b="square">□<i>BLAST</i></div>
+      <div class="b circle" data-b="circle">○<i>CHANGE</i></div>
+      <div class="b cross" data-b="cross">✕<i>JUMP</i></div>
+    </div>
+    <div class="grill"></div>
+  </div>
+</div>
+<div id="rotate"><div>↻</div>Turn your phone sideways!</div>
 <script src="js/config.js"></script>
 <script src="js/input.js"></script>
 <script src="js/audio.js"></script>

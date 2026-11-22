@@ -6,7 +6,7 @@ canvas.width = W * S; canvas.height = H * S;
 const Game = {
   scene: null, booted: false,
   go(name, arg) {
-    Sound.stopSpeak();
+    Sound.stopSpeak(); Sound.engine(false);
     if (name === 'title') this.scene = new TitleScene();
     else if (name === 'story') this.scene = new PlayScene('story');
     else if (name === 'free') this.scene = new PlayScene('free', arg);
@@ -93,7 +93,7 @@ class PlayScene {
   }
   menuItems() {
     const s = Sound.settings;
-    const items = ['RESUME', `MUSIC: ${s.music ? 'ON' : 'OFF'}`, `VOICES: ${s.voice ? 'ON' : 'OFF'}`];
+    const items = ['RESUME', `MUSIC: ${s.music ? 'ON' : 'OFF'}`, `VOICES: ${s.voice ? 'ON' : 'OFF'}`, `BUZZ: ${s.haptics ? 'ON' : 'OFF'}`];
     if (this.mode === 'free') items.push('CHANGE ROBOT');
     items.push('QUIT TO TITLE');
     return items;
@@ -110,12 +110,13 @@ class PlayScene {
         if (it === 'RESUME') this.paused = false;
         else if (it.startsWith('MUSIC')) Sound.setMusic(!Sound.settings.music);
         else if (it.startsWith('VOICES')) Sound.setVoice(!Sound.settings.voice);
+        else if (it.startsWith('BUZZ')) Sound.setHaptics(!Sound.settings.haptics);
         else if (it === 'CHANGE ROBOT') Game.go('select');
         else if (it === 'QUIT TO TITLE') Game.go('title');
       }
       return;
     }
-    if (Input.pressed('start') && !this.world.dialog && !this.world.locked) { this.paused = true; this.sel = 0; Sound.play('select'); return; }
+    if (Input.pressed('start') && !this.world.dialog && !this.world.locked) { this.paused = true; this.sel = 0; Sound.play('select'); Sound.engine(false); return; }
     this.world.update();
   }
   draw(ctx) {
@@ -252,13 +253,7 @@ class BirthdayScene {
 }
 
 // ===================================================== BOOT + LOOP
-function fit() {
-  const s = Math.min(innerWidth / W, innerHeight / H);
-  canvas.style.width = Math.floor(W * s) + 'px';
-  canvas.style.height = Math.floor(H * s) + 'px';
-}
-addEventListener('resize', fit);
-fit();
+Touch.layout();
 addEventListener('keydown', e => {
   if (e.code === 'KeyF') {
     if (!document.fullscreenElement) document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();

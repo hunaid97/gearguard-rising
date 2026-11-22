@@ -173,13 +173,17 @@ class Player extends Body {
     }
     if (pressed('triangle')) w.talk(this);
 
+    const stepBefore = Math.floor(this.anim / 7);
     w.moveBody(this);
+    if (this.form === 'vehicle') Sound.engine(true, Math.abs(this.vx) + Math.abs(this.vy) * 0.5, this.cfg.vehicle);
+    else Sound.engine(false);
     if (this.justLanded) {
       if (this.form === 'robot' && (this.slamming || this.justLanded > 8.5)) w.slam(this);
       else if (this.justLanded > 4) { Sound.play('land'); w.dust(this.x, this.y, 6); }
       this.slamming = false;
     }
     this.tick();
+    if (this.onGround && this.form !== 'vehicle' && Math.abs(this.vx) > 0.6 && Math.floor(this.anim / 7) !== stepBefore) Sound.play('step');
     this.regenT++;
     if (this.regenT > 360 && this.hearts < this.maxHearts) { this.hearts++; this.regenT = 0; }
   }
@@ -638,7 +642,10 @@ class World {
   }
   updateDialog() {
     const d = this.dialog;
+    const before = Math.floor(d.shown);
     d.shown = Math.min(d.text.length, d.shown + 1.3);
+    const now = Math.floor(d.shown);
+    if (now !== before && now % 3 === 0 && d.text[now - 1] && d.text[now - 1] !== ' ') Sound.blip(d.who);
     if (['cross', 'triangle', 'square', 'circle'].some(b => Input.pressed(b))) {
       if (d.shown < d.text.length) d.shown = d.text.length;
       else { this.dialog = null; Sound.play('select'); }
@@ -718,6 +725,7 @@ class World {
   // ---------------- celebration (when Qumayl becomes a robot) ----------------
   startCelebrate(dur = 290) {
     this.celebrate = { t: 0, dur, conf: [] };
+    Sound.play('cheer');
     for (let i = 0; i < 90; i++) this.celebrate.conf.push({ x: W / 2, y: 120, vx: (Math.random() - 0.5) * 7, vy: -2 - Math.random() * 5, c: pick(['#ff6b6b', '#ffd21f', '#4fe0a0', '#8fd8ff', '#ff8ad8', '#ffffff']), r: Math.random() * 6 });
   }
   updateCelebrate() {

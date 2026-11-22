@@ -1,7 +1,7 @@
 // Synthesised sound effects, chiptune music and read-aloud dialogue. No audio files needed.
 const Sound = (() => {
   let ac = null, master, sfxBus, musicBus;
-  const settings = { music: true, voice: true };
+  const settings = { music: true, voice: true, haptics: true };
   try { Object.assign(settings, JSON.parse(localStorage.getItem('qa_settings') || '{}')); } catch (e) {}
   const save = () => { try { localStorage.setItem('qa_settings', JSON.stringify(settings)); } catch (e) {} };
   let wantSong = null;
@@ -85,8 +85,59 @@ const Sound = (() => {
     charge() { tone(180, 0.8, { slide: 820, vol: 0.1, type: 'sawtooth' }); },
     firework() { noise(0.5, { vol: 0.25, freq: 2600 }); tone(1200, 0.3, { slide: -900, vol: 0.05 }); },
     suit() { [262, 330, 392, 523, 659, 784, 1047].forEach((f, i) => tone(f, 0.28, { delay: i * 0.09, vol: 0.14 })); },
+    step() { noise(0.05, { vol: 0.14, freq: 1400 }); tone(110 + Math.random() * 30, 0.05, { vol: 0.08, type: 'triangle' }); },
+    cheer() { [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => tone(f, 0.16, { delay: i * 0.08, vol: 0.12, type: 'triangle' })); for (let i = 0; i < 5; i++) noise(0.25, { vol: 0.12, freq: 3000, delay: 0.2 + i * 0.18 }); },
+    coin() { tone(988, 0.06, { vol: 0.1 }); tone(1319, 0.14, { delay: 0.06, vol: 0.1 }); },
   };
-  function play(n) { if (!ac || !SFX[n]) return; try { SFX[n](); } catch (e) {} }
+  function play(n) { buzz(n); if (!ac || !SFX[n]) return; try { SFX[n](); } catch (e) {} }
+
+  // ---------- haptics: vibration on Android, the system "tick" trick on iPhone ----------
+  const HAPTIC = {
+    button: 6, jump: 8, djump: [6, 30, 6], stomp: 18, hit: 12, smash: 22, boom: [30, 30, 40], hurt: [40, 40, 60],
+    pickup: [10, 40, 10, 40, 20], transform: [8, 40, 8, 40, 8, 40, 30], slam: [60, 30, 40], land: 10,
+    bigblast: 20, suit: [20, 60, 20, 60, 20, 60, 80], honk: [15, 40, 15], cheer: [20, 80, 20, 80, 20],
+  };
+  let iosSwitch = null, lastBuzz = 0;
+  function iosTick() {
+    try {
+      if (!iosSwitch) {
+        const l = document.createElement('label'), i = document.createElement('input');
+        i.type = 'checkbox'; i.setAttribute('switch', ''); l.style.display = 'none';
+        l.appendChild(i); document.body.appendChild(l); iosSwitch = l;
+      }
+      iosSwitch.click();
+    } catch (e) {}
+  }
+  function buzz(n) {
+    const p = HAPTIC[n];
+    if (!p || !settings.haptics) return;
+    const now = performance.now();
+    if (now - lastBuzz < 45) return;
+    lastBuzz = now;
+    if (navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} }
+    else iosTick();
+  }
+  // physical-feeling button click for the console buttons
+  function click() { if (!ac) return; noiseAt(ac.currentTime, 0.025, 0.25, 5000, sfxBus); osc(1800, ac.currentTime, 0.02, 'square', 0.04, -800, sfxBus); }
+  // little talking blips while dialogue types out
+  const BLIP = { titan: 140, zip: 620, skysnarl: 520, dreadcore: 95, qumayl: 480 };
+  function blip(who) { if (!ac) return; const f = (BLIP[who] || 300) * (0.9 + Math.random() * 0.25); osc(f, ac.currentTime, 0.04, 'square', 0.05, 0, sfxBus); }
+  // engine hum that follows vehicle speed
+  let eng = null;
+  function engine(on, speed = 0, kind = 'car') {
+    if (!ac) return;
+    if (on && !eng) {
+      const o = ac.createOscillator(), o2 = ac.createOscillator(), g = ac.createGain(), f = ac.createBiquadFilter();
+      o.type = 'sawtooth'; o2.type = 'square'; f.type = 'lowpass'; f.frequency.value = 500; g.gain.value = 0;
+      o.connect(f); o2.connect(f); f.connect(g); g.connect(sfxBus); o.start(); o2.start();
+      eng = { o, o2, g };
+    }
+    if (!eng) return;
+    const t = ac.currentTime, base = kind === 'jet' ? 140 : kind === 'tank' ? 38 : kind === 'truck' ? 45 : 60;
+    eng.o.frequency.setTargetAtTime(base + speed * 18, t, 0.08);
+    eng.o2.frequency.setTargetAtTime((base + speed * 18) * 0.5, t, 0.08);
+    eng.g.gain.setTargetAtTime(on ? 0.035 + speed * 0.01 : 0, t, 0.1);
+  }
 
   // ---------- music (original tunes) ----------
   const NOTE = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
@@ -192,5 +243,6 @@ const Sound = (() => {
   function setMusic(on) { settings.music = on; save(); if (musicBus) musicBus.gain.value = on ? MUSIC_VOL : 0; }
   function setVoice(on) { settings.voice = on; save(); if (!on) stopSpeak(); }
 
-  return { init, play, music, speak, stopSpeak, unlockSpeech, settings, setMusic, setVoice };
+  function setHaptics(on) { settings.haptics = on; save(); if (on) buzz('button'); }
+  return { init, play, music, speak, stopSpeak, unlockSpeech, settings, setMusic, setVoice, setHaptics, buzz, click, blip, engine };
 })();
