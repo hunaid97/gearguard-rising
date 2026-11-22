@@ -1,0 +1,6 @@
+# keep the personal photo off GitHub
+assets/qumayl.webp
+assets/*.jpg
+assets/*.jpeg
+assets/*.png
+.DS_Store

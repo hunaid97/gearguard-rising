@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Qumayl">
+<meta name="theme-color" content="#07080d">
+<title>Qumayl: Gearguard Rising</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; height: 100%; background: #07080d; overflow: hidden; }
+  body { display: flex; align-items: center; justify-content: center; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: none; }
+  canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: block; touch-action: none; }
+
+  /* ---------- touch controls ---------- */
+  #tc { position: fixed; inset: 0; pointer-events: none; z-index: 5; font-family: "Press Start 2P", monospace; }
+  #tc > * { pointer-events: auto; touch-action: none; }
+  #dpad { position: absolute; left: max(12px, env(safe-area-inset-left)); bottom: 12px; width: 36vmin; height: 36vmin;
+    border-radius: 50%; background: rgba(255,255,255,0.10); border: 2px solid rgba(255,255,255,0.35); }
+  #dpad.on { background: rgba(255,255,255,0.18); }
+  #dpad .arr { position: absolute; width: 0; height: 0; border: 4.2vmin solid transparent; opacity: 0.75; }
+  #dpad .u { left: 50%; top: 5%; transform: translateX(-50%); border-bottom-color: #fff; border-top-width: 0; }
+  #dpad .d { left: 50%; bottom: 5%; transform: translateX(-50%); border-top-color: #fff; border-bottom-width: 0; }
+  #dpad .l { top: 50%; left: 5%; transform: translateY(-50%); border-right-color: #fff; border-left-width: 0; }
+  #dpad .r { top: 50%; right: 5%; transform: translateY(-50%); border-left-color: #fff; border-right-width: 0; }
+  #knob { position: absolute; left: 50%; top: 50%; width: 15vmin; height: 15vmin; margin: -7.5vmin 0 0 -7.5vmin; border-radius: 50%;
+    background: rgba(255,255,255,0.35); border: 2px solid rgba(255,255,255,0.6); pointer-events: none; }
+  #btns { position: absolute; right: max(12px, env(safe-area-inset-right)); bottom: calc(12px + 3.6vmin); width: 39vmin; height: 39vmin; pointer-events: none; }
+  #btns .b { position: absolute; width: 13.5vmin; height: 13.5vmin; border-radius: 50%; pointer-events: auto; touch-action: none;
+    background: rgba(20,22,30,0.55); border: 2px solid rgba(255,255,255,0.45); display: flex; align-items: center; justify-content: center;
+    font-family: system-ui, sans-serif; font-size: 7vmin; font-weight: 700; line-height: 1; }
+  #btns .b i { position: absolute; bottom: -3.2vmin; font: normal 2vmin "Press Start 2P", monospace; color: rgba(255,255,255,0.8); white-space: nowrap; }
+  #btns .b.on { background: rgba(255,255,255,0.4); transform: scale(0.92); }
+  #btns .triangle { left: 12.75vmin; top: 0; color: #4fe0a0; }
+  #btns .square { left: 0; top: 12.75vmin; color: #ff8ad8; }
+  #btns .circle { right: 0; top: 12.75vmin; color: #ff7070; }
+  #btns .cross { left: 12vmin; bottom: 0; color: #8fb8ff; width: 15vmin; height: 15vmin; }
+  #pause { position: absolute; top: 12vmin; right: max(12px, env(safe-area-inset-right)); padding: 6px 14px; border-radius: 14px;
+    background: rgba(20,22,30,0.55); border: 2px solid rgba(255,255,255,0.4); color: #fff; font-size: 12px; }
+  #pause.on { background: rgba(255,255,255,0.4); }
+  #rotate { display: none; position: absolute; inset: 0; background: #07080d; color: #ffe14d; font-size: 14px; line-height: 2;
+    text-align: center; align-items: center; justify-content: center; flex-direction: column; padding: 20px; }
+  #rotate div { font-size: 60px; font-family: system-ui, sans-serif; }
+  @media (orientation: portrait) { body.touch #rotate { display: flex; } }
+</style>
+</head>
+<body>
+<canvas id="game" width="1152" height="648"></canvas>
+<script src="js/config.js"></script>
+<script src="js/input.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/art.js"></script>
+<script src="js/characters.js"></script>
+<script src="js/world.js"></script>
+<script src="js/level.js"></script>
+<script src="js/story.js"></script>
+<script src="js/factory.js"></script>
+<script src="js/touch.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
